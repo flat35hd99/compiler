@@ -5,6 +5,33 @@
 #include <stdarg.h>
 #include <ctype.h>
 
+// Print error and exit
+// recieve same arguments of printf
+void error(char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
+// 入力プログラム
+char *user_input;
+
+// Report error location
+void error_at(char *location, char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+
+    int position = location - user_input;
+    fprintf(stderr, "%s\n", user_input);
+    fprintf(stderr, "%*s", position, " "); // position個分の空白を出力
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
 // Tokens
 typedef enum {
     TK_RESERVED, // operators
@@ -24,16 +51,6 @@ struct Token {
 // Current token
 Token *token;
 
-// Print error and exit
-// recieve same arguments of printf
-void error(char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-    exit(1);
-}
-
 // tokenが期待している記号のときはトークンを一つ読み進めてtrue
 // そうでなければfalseを返す
 bool consume(char op) {
@@ -47,7 +64,7 @@ bool consume(char op) {
 // otherwise report error
 void expect(char op) {
     if (token->kind != TK_RESERVED || token->str[0] != op) 
-        error("'%c' expected but it is not", op);
+        error_at(token->str, "expected operator '%c' but got '%c'", op, token->str[0]);
     
     token = token->next;
 }
@@ -56,7 +73,7 @@ void expect(char op) {
 // Otherwise report error
 int expect_number() {
     if (token->kind != TK_NUM)
-        error("It is not number");
+        error_at(token->str, "It is not number");
     
     int val = token->val;
     token = token->next;
@@ -99,7 +116,7 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        error("cannot tokenize: '%c'", *p);
+        error_at(token->str, "cannot tokenize: '%c'", *p);
     }
 
     new_token(TK_EOF, cur, p);
@@ -112,6 +129,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    user_input = argv[1];
     token = tokenize(argv[1]);
 
     // アセンブリの前半を出力
