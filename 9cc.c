@@ -169,12 +169,9 @@ Node *primary() {
 
 Node *unary() {
   if (consume('+')) {
-    Node *node = primary();
-    return node;
+    return primary();
   } else if (consume('-')) {
-    Node *node = primary();
-    node->val = -node->val;
-    return node;
+    return new_node(ND_SUB, new_node_num(0), primary());
   } else {
     return primary();
   }
