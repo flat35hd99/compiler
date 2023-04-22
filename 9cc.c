@@ -167,14 +167,27 @@ Node *primary() {
   return new_node_num(expect_number());
 }
 
+Node *unary() {
+  if (consume('+')) {
+    Node *node = primary();
+    return node;
+  } else if (consume('-')) {
+    Node *node = primary();
+    node->val = -node->val;
+    return node;
+  } else {
+    return primary();
+  }
+}
+
 Node *mul() {
-  Node *node = primary();
+  Node *node = unary();
 
   for (;;) {
     if (consume('*'))
-      node = new_node(ND_MUL, node, primary());
+      node = new_node(ND_MUL, node, unary());
     else if (consume('/'))
-      node = new_node(ND_DIV, node, primary());
+      node = new_node(ND_DIV, node, unary());
     else
       return node;
   }

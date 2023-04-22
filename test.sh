@@ -45,4 +45,8 @@ assert 47 '5+6*7'
 assert 15 '5*(9-6)'
 assert 4 '(3+5)/2'
 
+# Step5: Unary
+assert 1 '+1'
+assert 10 '-20+30'
+
 echo OK
